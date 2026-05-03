@@ -1,0 +1,174 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Substation {
+  id           String        @id @default(cuid())
+  code         String        @unique
+  name         String
+  division     String
+  lat          Float
+  lng          Float
+  feeders      Feeder[]
+  transformers Transformer[]
+}
+
+model Feeder {
+  id             String   @id @default(cuid())
+  substationId  String
+  code          String   @unique
+  name          String
+  type          String
+  capacityKW    Float
+  substation    Substation  @relation(fields: [substationId], references: [id], onDelete: Cascade)
+  consumers     Consumer[]
+  readings      FeederReading[]
+  anomalies     Anomaly[]
+
+  @@index([substationId])
+}
+
+model Consumer {
+  id              String   @id @default(cuid())
+  feederId        String
+  rrNumber        String   @unique
+  name            String
+  type            String
+  sanctionedLoad  Float
+  pincode         String
+  lat             Float?
+  lng             Float?
+  feeder          Feeder   @relation(fields: [feederId], references: [id], onDelete: Cascade)
+  readings        ConsumerReading[]
+  anomalies       Anomaly[]
+  topologyInferences TopologyInference[]
+
+  @@index([feederId])
+  @@index([pincode])
+}
+
+model FeederReading {
+  id            String   @id @default(cuid())
+  feederId     String
+  timestamp     DateTime
+  kwhSupplied  Float
+  kwhBilled    Float
+  lossKwh      Float
+  lossPct      Float
+  feeder        Feeder   @relation(fields: [feederId], references: [id], onDelete: Cascade)
+
+  @@index([feederId, timestamp])
+}
+
+model ConsumerReading {
+  id              String   @id @default(cuid())
+  consumerId      String
+  timestamp       DateTime
+  kwh             Float
+  voltage         Float?
+  current         Float?
+  powerFactor     Float?
+  reverseFlow     Boolean  @default(false)
+  commStatus      String?
+  consumer        Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+
+  @@index([consumerId, timestamp])
+}
+
+model Anomaly {
+  id                      String   @id @default(cuid())
+  consumerId              String?
+  feederId                String?
+  type                    String
+  severity                String
+  status                  String   @default("OPEN")
+  detectedAt              DateTime @default(now())
+  windowStart             DateTime
+  windowEnd               DateTime
+  score                   Float
+  evidence                String
+  reasoning               String
+  estimatedLossKwh        Float?
+  estimatedRevenueLossInr Float?
+  investigator            String?
+  resolution              String?
+  statusHistory           String?
+  consumer                Consumer? @relation(fields: [consumerId], references: [id], onDelete: SetNull)
+  feeder                  Feeder?   @relation(fields: [feederId], references: [id], onDelete: SetNull)
+
+  @@index([status, severity])
+  @@index([feederId])
+  @@index([type])
+}
+
+model Transformer {
+  id               String               @id @default(cuid())
+  substationId     String
+  code             String               @unique
+  name             String
+  capacityKVA      Float
+  phase            String               @default("3-PHASE")
+  oilTempC         Float?
+  loadPct          Float?
+  failureProb30    Float                @default(0)
+  failureProb60    Float                @default(0)
+  failureProb90    Float                @default(0)
+  riskLevel        String               @default("LOW")
+  lastInspected    DateTime?
+  installDate      DateTime?
+  consumersServed  Int                  @default(0)
+  substation       Substation           @relation(fields: [substationId], references: [id], onDelete: Cascade)
+  workOrders       MaintenanceWorkOrder[]
+
+  @@index([substationId])
+  @@index([riskLevel])
+}
+
+model MaintenanceWorkOrder {
+  id              String   @id @default(cuid())
+  transformerId   String
+  priority        String
+  status          String   @default("PENDING")
+  description     String
+  dueDate         DateTime
+  createdAt       DateTime @default(now())
+  assignedCrew    String?
+  transformer     Transformer @relation(fields: [transformerId], references: [id], onDelete: Cascade)
+
+  @@index([transformerId])
+  @@index([status])
+}
+
+model TopologyInference {
+  id                 String   @id @default(cuid())
+  consumerId         String
+  recordedFeederId   String
+  inferredFeederId   String
+  confidence         Float
+  isMismatch         Boolean  @default(false)
+  method             String   @default("voltage-correlation")
+  voltageCorrelation Float?
+  phaseAngleMatch    Float?
+  createdAt          DateTime @default(now())
+  consumer           Consumer @relation(fields: [consumerId], references: [id], onDelete: Cascade)
+
+  @@index([consumerId])
+  @@index([isMismatch])
+}
+
+model FederatedRound {
+  id                 String   @id @default(cuid())
+  roundNumber        Int      @unique
+  participatingNodes Int
+  avgTrainLoss       Float
+  globalAccuracy     Float
+  privacyBudgetEps   Float
+  deltaWeightsKB     Float
+  convergenceRate    Float?
+  timestamp          DateTime @default(now())
+}
