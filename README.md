@@ -1,60 +1,94 @@
-# MeterSense AI — BESCOM smart meter intelligence
+# MeterSense AI
 
-Operational dashboard for BESCOM engineers: feeder and consumer time-series, **AT&C (aggregate technical & commercial) loss** visibility, **isolation-forest** cohort anomalies, **rule-based** detection (seven types), and **feeder reconciliation** (supplied vs billed) with **explainable** evidence and investigator workflow. Maps use **Leaflet**; metrics use **Tremor** on **Next.js 15** + **Prisma (SQLite)** + **Tailwind v3**.
+A comprehensive smart grid intelligence platform designed for BESCOM (Bangalore Electricity Supply Company Limited), addressing the core challenges of AT&C (Aggregate Technical & Commercial) loss detection, predictive maintenance, and grid topology mapping.
 
-> **PanIIT AI for Bharat Hackathon** — Theme 8: AI for Smart Meter Intelligence & Loss Detection (BESCOM)
+This project implements the features outlined in **Theme 8: Advanced Agentic Coding - Smart Grid Intelligence**.
 
-## Quick start
+## 🌟 Key Features
 
-```bash
-cp .env.example .env
-npm install
-npx prisma migrate deploy
-npm run seed
-npm run dev
-```
+### 1. 7-Type Anomaly Taxonomy & Spatio-Temporal Detection
+Advanced algorithms combining Isolation Forests and temporal rule-based heuristics to detect and classify 7 distinct types of anomalies:
+- **Tamper Suspected:** Detects meter tampering signatures.
+- **Bypass Suspected:** Identifies potential direct line tapping.
+- **Zero Consumption Live:** Flags active meters reporting zero usage.
+- **Power Factor Drop:** Detects sudden drops in power quality.
+- **Reverse Flow:** Identifies energy feeding back into the grid unexpectedly.
+- **Voltage Sag:** Monitors severe voltage fluctuations.
+- **Meter Comm Loss:** Tracks AMI communication failures.
+*Every anomaly provides explainable evidence for field investigators.*
 
-Open **http://localhost:3000**.
+### 2. Federated Learning Dashboard (Privacy-Preserving)
+A fully operational dashboard demonstrating a Federated Learning architecture that is **DPDP Act 2023 Compliant by design**.
+- Edge nodes (smart meters/concentrators) train models locally on raw data.
+- Only mathematical model weight updates (Δ) are transmitted to the central server.
+- Consumer privacy is cryptographically guaranteed through differential privacy, tracking Privacy Budget (ε).
+- Visualizes model convergence (Accuracy & Loss) across communication rounds.
 
-## Demo data
+### 3. Predictive Maintenance for Transformers
+Survival analysis module estimating failure probabilities (30/60/90-day) for distribution transformers.
+- Ranks transformers by risk level (Critical, High, Medium, Low) based on load percentages, oil temperatures, and age.
+- Automatically generates and prioritizes maintenance work orders.
+- Visualized through a comprehensive health register and survival probability bar charts.
 
-- `scripts/generate-mock-meter-data.ts` — 5 substations (Jayanagar, Koramangala, Whitefield, Rajajinagar, Electronic City), 20 feeders, 200 consumers, 30d hourly/6h readings, injected edge cases.  
-- `scripts/seed-demo.ts` — wipes and loads data, then runs the same detection as `POST /api/detect/run` (~15–25 anomalies expected).
+### 4. Algorithmic Grid Topology Inference
+Corrects outdated GIS maps by algorithmic reverse-engineering of the physical grid topology.
+- Analyzes voltage fluctuation correlations and phase-angle signatures across consumer meters.
+- Identifies mismatches between recorded feeder connections and actual physical connections.
+- Assigns confidence scores to inferences, replacing the need for manual line-walking surveys.
 
-## Architecture
+### 5. Feeder-Level Reconciliation
+Detailed dashboards tracking energy supplied vs. billed at the substation and feeder levels.
+- Calculates and breaks down AT&C losses.
+- Provides interactive visualizations of consumption patterns.
 
-See [docs/solution-document.md](docs/solution-document.md) and [docs/diagrams/architecture.png](docs/diagrams/architecture.png) (Mermaid: `docs/diagrams/architecture.mmd`).
+### 6. Interactive Spatial Visualization
+A Leaflet-based interactive map displaying substations, feeders, and consumer endpoints.
+- Heatmap overlay for AT&C loss concentration by pincode.
 
-## Tech stack
+## 🛠 Tech Stack
 
-- Next.js 15 (App Router) · TypeScript  
-- Prisma 5 + SQLite  
-- Tailwind CSS v3 · Tremor · lucide (optional) · Leaflet + react-leaflet  
-- `isolation-forest` (JS) for cohort scoring; template `lib/ai.ts` when `USE_MOCK_AI=true` (default)
+- **Framework:** Next.js 15 (App Router)
+- **UI Components:** React, Tailwind CSS, Tremor (for data visualization)
+- **Database:** SQLite (local/dev) managed by Prisma ORM
+- **Maps:** Leaflet & React-Leaflet
+- **Deployment:** Vercel & Netlify compatible (includes `/tmp` DB copy strategy for read-only filesystems).
 
-## Verification (gates)
+## 🚀 Getting Started
 
-```bash
-npm install
-npm run build
-npx tsc --noEmit
-npm run seed
-npm run dev   # then curl http://localhost:3000
-```
+### Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
 
-## Documentation
+### Local Setup
 
-- [docs/solution-document.md](docs/solution-document.md)  
-- [docs/solution-document.pdf](docs/solution-document.pdf)
+1. **Install dependencies:**
+   `npm install`
 
-## Remote
+2. **Initialize the database:**
+   Push the Prisma schema to create the SQLite database:
+   `npx prisma db push`
 
-```text
-https://github.com/sridhar7601/bescom-meter-intel.git
-```
+3. **Seed the database with mock data:**
+   Generate synthetic readings, anomalies, transformers, and federated learning rounds:
+   `npm run seed`
 
-(Use a plain `https` URL — do not embed tokens in the remote URL.)
+4. **Start the development server:**
+   `npm run dev`
 
-## Known limitations
+Open `http://localhost:3000` in your browser to view the application.
 
-Synthetic data only; CSV upload is a stub; pincode shapes are simplified for the choropleth demo.
+## 📁 Project Structure
+
+- `/app`: Next.js App Router pages and API routes.
+- `/components`: Reusable UI components and dashboard widgets.
+- `/lib`: Database client, utility functions, and AI detection heuristics.
+- `/prisma`: Database schema (`schema.prisma`) and SQLite file.
+- `/scripts`: Data generation and seeding scripts.
+- `/public`: Static assets, including GeoJSON data for the map.
+
+## ☁️ Deployment Notes
+
+This project is configured to run on platforms with read-only filesystems (like Vercel and Netlify). 
+- During the build phase (`npm run build`), the database is seeded.
+- At runtime, `lib/db.ts` checks if the environment is Serverless. If so, it copies the pre-seeded SQLite database from the build output to the `/tmp` directory, allowing the application to read and write data during the serverless function's lifecycle.
+- To resolve peer dependency conflicts (e.g., React 19 vs Tremor requiring React 18) during deployment, an `.npmrc` file with `legacy-peer-deps=true` is included.
