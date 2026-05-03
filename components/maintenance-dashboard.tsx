@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart, Card, Title, Text, LineChart } from "@tremor/react";
+import { BarChart, Card, Title, Text } from "@tremor/react";
 
 type Transformer = {
   id: string; code: string; name: string; capacityKVA: number;

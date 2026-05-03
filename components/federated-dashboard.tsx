@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Card, Title, Text, LineChart, DonutChart, Metric } from "@tremor/react";
+import { Card, Title, Text, LineChart, Metric } from "@tremor/react";
 
 type FedRound = {
   roundNumber: number;
