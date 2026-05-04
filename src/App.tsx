@@ -6,6 +6,7 @@ import Maintenance from "./pages/Maintenance";
 import Topology from "./pages/Topology";
 import Federated from "./pages/Federated";
 import MapPage from "./pages/MapPage";
+import Feeders from "./pages/Feeders";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route path="/" element={<Dashboard />} />
         <Route path="/anomalies" element={<Anomalies />} />
+        <Route path="/feeders" element={<Feeders />} />
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/topology" element={<Topology />} />
         <Route path="/federated" element={<Federated />} />

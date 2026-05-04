@@ -2,11 +2,12 @@ import { NavLink, Outlet } from "react-router-dom";
 
 const links = [
   { to: "/", label: "Dashboard" },
-  { to: "/map", label: "Map" },
+  { to: "/feeders", label: "Feeders" },
   { to: "/anomalies", label: "Anomalies" },
   { to: "/maintenance", label: "Maintenance" },
   { to: "/topology", label: "Topology" },
   { to: "/federated", label: "Federated" },
+  { to: "/map", label: "Map" },
 ];
 
 export default function Layout() {
