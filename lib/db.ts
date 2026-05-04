@@ -21,7 +21,7 @@ function getDatabaseUrl(): string {
       return `file:${tmpDb}`;
     }
   }
-  return process.env.DATABASE_URL ?? "file:./metersense.db";
+  return `file:${path.join(process.cwd(), "prisma", "metersense.db")}`;
 }
 
 function createClient(): PrismaClient {
