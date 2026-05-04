@@ -1,32 +1,4 @@
-# Dependencies
-node_modules/
-
-# Next.js
-.next/
-out/
-
-# Env
-.env
-.env.local
-.env.*.local
-
-# DB journal (the .db itself is created by the build script)
-prisma/metersense.db-journal
-
-# OS / IDE
-.DS_Store
-.idea/
-.vscode/
-
-# Logs
-*.log
-npm-debug.log*
-
-# TypeScript
-next-env.d.ts
-
-# Vercel
-.vercel
-
-# Build info
-tsconfig.tsbuildinfo
+node_modules
+dist
+.vite
+*.local
